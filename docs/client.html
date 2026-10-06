@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Get started · App — mushroom steam</title>
+<meta name="description" content="Install the mushroom steam desktop app, point it at your signaling server, and start streaming gameplay peer-to-peer.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="site">
+  <a class="brand" href="index.html">🍄 mushroom steam</a>
+  <div class="links">
+    <a href="index.html">Home</a>
+    <a href="client.html" class="on">Get started · App</a>
+    <a href="server.html">Get started · Server</a>
+    <a href="settings.html">Settings</a>
+    <a href="download.html">Download</a>
+    <a href="https://github.com/Zachary-work/mushroom-steam">GitHub</a>
+  </div>
+</nav>
+
+<header class="hero" style="padding:48px 20px 36px">
+  <h1 style="font-size:2.1rem">Get started · App</h1>
+  <p class="tag">Install on each PC, point it at your server, then host or watch with a short room code.</p>
+</header>
+
+<main class="wrap">
+
+  <section>
+    <p class="note tip"><strong>Need a server first?</strong> The app pairs through a signaling server you
+      host. If you haven't set one up, start with <a href="server.html">Get started · Server</a> (or use a
+      <a href="server.html#lan">LAN-only quick test</a>).</p>
+
+    <h2>The whole flow at a glance</h2>
+    <pre class="mermaid">
+flowchart LR
+  A["🎮 Host<br/>Share my screen"] --> B["Pick a screen<br/>+ set quality"]
+  B --> C["Get room code<br/>MUSH-7Q2K4"]
+  C -- "send code to friend" --> D["👀 Viewer<br/>Watch a friend"]
+  D --> E["Type the code"]
+  E --> F["Server pairs them"]
+  C --> F
+  F ==> G["▶ Direct P2P stream"]
+    </pre>
+  </section>
+
+  <!-- INSTALL -->
+  <section id="install">
+    <h2><span class="num">1</span> Install the app</h2>
+
+    <h3>Option A — prebuilt (Windows)</h3>
+    <p>Download the portable <code>mushroom steam X.Y.Z.exe</code> from the project's
+       <a href="https://github.com/Zachary-work/mushroom-steam/releases">releases</a> and run it. No install needed.</p>
+
+    <h3>Option B — from source (any OS)</h3>
+<pre><code>git clone https://github.com/Zachary-work/mushroom-steam.git
+cd mushroomSteam
+npm install
+npm start                 <span class="c-comment"># run the app</span>
+<span class="c-comment"># or build a Windows portable .exe →</span>
+npm run build:win</code></pre>
+    <p class="note"><strong>macOS:</strong> first launch asks for <strong>Screen Recording</strong>
+       permission (System Settings → Privacy &amp; Security → Screen Recording).
+       <strong>Windows</strong> works out of the box.
+       If Electron's binary didn't download during <code>npm install</code>, run
+       <code>node node_modules/electron/install.js</code>.</p>
+    <p class="note"><strong>Per-window audio (Windows, optional):</strong> sharing just one app's sound uses a
+       small native module. It builds automatically if you have the Visual C++ build tools + Windows SDK;
+       otherwise the app simply falls back to system audio. See
+       <a href="settings.html#audio">Stream audio</a>.</p>
+  </section>
+
+  <!-- POINT AT SERVER -->
+  <section id="server">
+    <h2><span class="num">2</span> Point the app at your server</h2>
+    <p>On the home screen click <strong>🌐 Server</strong> and enter:</p>
+    <table>
+      <tr><th>Field</th><th>Value</th></tr>
+      <tr><td>Server URL</td><td><code>wss://mushroom.duckdns.org:8443</code> (your server's address)</td></tr>
+      <tr><td>App secret</td><td>the same <code>secret</code> from the server's <code>config.json</code></td></tr>
+    </table>
+    <p>It's saved per-user and survives app updates. <strong>Both</strong> the host and the viewer enter the
+       same URL + secret.</p>
+    <figure class="shot shot-narrow">
+      <img src="img/server.png" alt="Server settings — enter your server URL and app secret">
+      <figcaption>Home → 🌐 Server → enter your URL and the shared secret.</figcaption>
+    </figure>
+  </section>
+
+  <!-- STREAM -->
+  <section id="stream">
+    <h2><span class="num">3</span> Host or watch</h2>
+    <div class="card">
+      <h3 style="margin-top:6px">🎮 Host (the one sharing)</h3>
+      <ol>
+        <li><strong>Share my screen</strong> → pick a monitor or a single window.</li>
+        <li>Set quality, or keep the defaults (<a href="settings.html">what the settings do →</a>).</li>
+        <li>You get a room code like <code>MUSH-7Q2K4</code>. Send it to your friend.</li>
+        <li>While live you can hit <strong>🔄 Change screen</strong> or <strong>🎚 Adjust quality</strong> —
+            both apply instantly, no reconnect.</li>
+      </ol>
+      <h3>👀 Viewer (the one watching)</h3>
+      <ol>
+        <li><strong>Watch a friend</strong> → type the <code>MUSH-XXXXX</code> code.</li>
+        <li>Press connect — the peer-to-peer stream starts.</li>
+      </ol>
+    </div>
+    <p class="note tip">Room codes use an unambiguous alphabet (no <code>0/O/1/I/L</code>), are
+       case-insensitive, and you can paste them with or without the <code>MUSH-</code> prefix.</p>
+
+    <figure class="shot">
+      <img src="img/pick.png" alt="Choose what to share — a whole screen or a single game window">
+      <figcaption>Pick a whole screen or a single window. Sharing a window also captures just that app's audio.</figcaption>
+    </figure>
+    <div class="shots">
+      <figure class="shot">
+        <img src="img/host-live.png" alt="Host live view with preview and live stats">
+        <figcaption>Host — you're live, with preview, stats, and live controls.</figcaption>
+      </figure>
+      <figure class="shot">
+        <img src="img/player.png" alt="Viewer watching the stream">
+        <figcaption>Viewer — watching the peer-to-peer stream.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- VERIFY -->
+  <section id="verify">
+    <h2><span class="num">4</span> Check the connection</h2>
+    <p>Click the live stats (host) or the stats button (viewer) to open the <strong>connection overlay</strong>.
+       It shows the real numbers — useful to confirm things are working and to tune quality:</p>
+    <table>
+      <tr><th>Field</th><th>Means</th></tr>
+      <tr><td>Resolution / fps</td><td>What's actually being sent, alongside what you requested.</td></tr>
+      <tr><td>Bitrate</td><td>Live throughput vs. your cap.</td></tr>
+      <tr><td>Latency / packet loss</td><td>Round-trip time and lost packets.</td></tr>
+      <tr><td>Codec</td><td><code>H264</code> when hardware encoding is on, otherwise <code>VP9</code>.</td></tr>
+      <tr><td>Limited by</td><td><code>none</code>, <code>cpu</code>, or <code>bandwidth</code> — the current bottleneck.</td></tr>
+      <tr><td>Path</td><td><strong>P2P</strong> (direct) or <strong>Relay</strong> (via your TURN server).</td></tr>
+    </table>
+    <figure class="shot shot-narrow">
+      <img src="img/stats.png" alt="Connection overlay showing Direct P2P, codec, bitrate, latency and the limiting factor">
+      <figcaption>The connection overlay — confirms the direct P2P path and shows the live numbers.</figcaption>
+    </figure>
+    <p class="note tip">Seeing <strong>Relay</strong> instead of <strong>P2P</strong>? A strict NAT blocked a
+       direct path, so video is going through coturn as a fallback — still private, just an extra hop.</p>
+  </section>
+
+  <hr>
+  <div class="nextcards">
+    <a href="settings.html"><strong>Settings reference →</strong> Resolution, framerate, bitrate, audio, low-latency, hardware encoding.</a>
+    <a href="server.html"><strong>Server setup →</strong> If you still need to stand up the pairing server.</a>
+  </div>
+</main>
+
+<footer>
+  🍄 <strong>mushroom steam</strong> — peer-to-peer gameplay streaming. Video goes straight to your friend's PC.
+</footer>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: {
+    primaryColor: '#FBF5EA', primaryBorderColor: '#C8492F', primaryTextColor: '#2C2519',
+    lineColor: '#C8492F', secondaryColor: '#EFE4D1', tertiaryColor: '#FBF3DE', fontSize: '14px'
+  }});
+</script>
+</body>
+</html>

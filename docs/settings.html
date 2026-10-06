@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings — mushroom steam</title>
+<meta name="description" content="Every mushroom steam quality setting explained: resolution, framerate, bitrate, per-window audio, low-latency mode, and hardware (GPU) encoding.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="site">
+  <a class="brand" href="index.html">🍄 mushroom steam</a>
+  <div class="links">
+    <a href="index.html">Home</a>
+    <a href="client.html">Get started · App</a>
+    <a href="server.html">Get started · Server</a>
+    <a href="settings.html" class="on">Settings</a>
+    <a href="download.html">Download</a>
+    <a href="https://github.com/Zachary-work/mushroom-steam">GitHub</a>
+  </div>
+</nav>
+
+<header class="hero" style="padding:48px 20px 36px">
+  <h1 style="font-size:2.1rem">Settings reference</h1>
+  <p class="tag">Everything in the <strong>Stream quality</strong> sheet, what it does, and how to tune it.
+     Most settings can be changed <strong>live mid-stream</strong> — no reconnect.</p>
+</header>
+
+<main class="wrap">
+
+  <figure class="shot shot-narrow">
+    <img src="img/settings.png" alt="Stream quality settings sheet">
+    <figcaption>The <strong>Stream quality</strong> sheet — open it from ⚙ on the pick screen or 🎚 Adjust quality while live.</figcaption>
+  </figure>
+
+  <section>
+    <table>
+      <tr><th>Setting</th><th>Options</th><th>Default</th></tr>
+      <tr><td><a href="#resolution">Resolution</a></td><td>720p · 1080p · 1440p · 4K</td><td>1080p</td></tr>
+      <tr><td><a href="#framerate">Frame rate</a></td><td>30 · 60 · 120 fps</td><td>60</td></tr>
+      <tr><td><a href="#bitrate">Bitrate</a></td><td>1–100 Mbps</td><td>~12 (auto-suggested)</td></tr>
+      <tr><td><a href="#audio">Stream audio</a></td><td>on / off</td><td>on</td></tr>
+      <tr><td><a href="#lowlat">Low-latency mode</a></td><td>on / off</td><td>off</td></tr>
+      <tr><td><a href="#gpu">Hardware encoding (GPU)</a></td><td>on / off</td><td>off</td></tr>
+    </table>
+  </section>
+
+  <!-- RESOLUTION -->
+  <section id="resolution">
+    <h2><span class="num">▦</span> Resolution</h2>
+    <p>The number is a <strong>target height</strong>: “1080p” means <strong>1080 vertical lines</strong>,
+       and the width follows your monitor's real aspect ratio. So on a 21:9 ultrawide, “1080p” is
+       2560×1080 — still a full 1080 tall, not squeezed.</p>
+    <p class="note"><strong>Why height-based?</strong> A fixed 1920×1080 box would crush non-16:9 monitors
+       (ultrawide, multi-monitor) well below the height you picked. Capping the height keeps the resolution
+       honest on any shape of screen. The capturer never upscales past the source — sharing a small window
+       stays at its native size.</p>
+    <p>Choosing a resolution also re-suggests a sensible bitrate sized to the <em>actual</em> pixel count.</p>
+  </section>
+
+  <!-- FRAMERATE -->
+  <section id="framerate">
+    <h2><span class="num">⏱</span> Frame rate</h2>
+    <p>Caps how many frames per second are captured and sent: <span class="pill">30</span>
+       <span class="pill">60</span> <span class="pill">120 fps</span>. Higher is smoother for fast motion
+       but costs more CPU/GPU to encode and more bandwidth.</p>
+    <p class="note warn"><strong>4K120 reality check:</strong> 4K at 120 fps in <em>software</em> is beyond
+       real-time on most CPUs. Either turn on <a href="#gpu">Hardware encoding</a>, or drop to
+       <strong>1440p120 / 1080p120</strong> for smooth motion, or <strong>4K60</strong> for maximum sharpness.</p>
+  </section>
+
+  <!-- BITRATE -->
+  <section id="bitrate">
+    <h2><span class="num">📶</span> Bitrate</h2>
+    <p><strong>How much data the video sends each second</strong> (the slider sets a ceiling, 1–100 Mbps).
+       Higher bitrate = sharper detail and fewer blocky artifacts during motion — <strong>at the same
+       resolution</strong>. It makes 1080p look <em>better</em>; it does not add pixels or framerate.</p>
+    <p>Think of it as: resolution is the canvas size, bitrate is how much ink you're allowed to use on it.</p>
+    <ul>
+      <li><strong>It's a ceiling, not a floor.</strong> A still screen sends far less than the cap — bits are
+          only spent when the picture changes.</li>
+      <li><strong>Diminishing returns.</strong> Past a point the image stops improving and you're just using
+          bandwidth. The auto-suggestion aims near the sweet spot for your resolution × fps × aspect ratio.</li>
+      <li><strong>The network has the final say.</strong> If the link can't carry your cap, WebRTC throttles
+          below it — you'll see <code>Limited by: bandwidth</code> in the stats overlay.</li>
+    </ul>
+  </section>
+
+  <!-- AUDIO -->
+  <section id="audio">
+    <h2><span class="num">🔊</span> Stream audio</h2>
+    <p>Sends audio alongside the video. mushroom steam prefers <strong>per-window audio</strong>: when you
+       share a single window, it captures only <em>that application's</em> sound — not your whole desktop,
+       notifications, or music.</p>
+    <table>
+      <tr><th>Situation</th><th>What's captured</th></tr>
+      <tr><td>Sharing a <strong>window</strong> (Windows, native module built)</td><td>Only that app's audio (per-process)</td></tr>
+      <tr><td>Sharing a <strong>whole screen</strong></td><td>System-wide desktop audio</td></tr>
+      <tr><td>Per-window capture unavailable</td><td>Falls back to system-wide desktop audio</td></tr>
+    </table>
+    <p class="note"><strong>Per-window audio</strong> uses a small native module (WASAPI process loopback,
+       Windows 10 build 20348+). It builds automatically with the Visual C++ build tools + Windows SDK; if
+       it isn't present, audio simply falls back to system-wide — nothing breaks.</p>
+  </section>
+
+  <!-- LOW LATENCY -->
+  <section id="lowlat">
+    <h2><span class="num">⚡</span> Low-latency mode</h2>
+    <p>Tells the encoder what to sacrifice <em>first</em> when the CPU or network can't keep up:</p>
+    <table>
+      <tr><th>Mode</th><th>Under load it…</th><th>Best for</th></tr>
+      <tr><td><strong>Off</strong> (balanced)</td><td>trades both resolution and framerate gracefully</td><td>general use — a good default</td></tr>
+      <tr><td><strong>On</strong> (maintain-framerate)</td><td>protects framerate, lowers resolution first</td><td>fast-paced games where smooth motion matters most</td></tr>
+    </table>
+    <p>If motion feels choppy under pressure, turn this <strong>on</strong> — you'll get smoother movement
+       (slightly softer image) instead of a low-fps slideshow. It also biases the encoder toward motion
+       rather than fine detail.</p>
+  </section>
+
+  <!-- GPU -->
+  <section id="gpu">
+    <h2><span class="num">🖥️</span> Hardware encoding (GPU)</h2>
+    <p>The biggest lever for <strong>smoothness and CPU usage</strong>. With it on, the app prefers
+       <strong>H.264</strong>, which is hardware-encoded by <strong>NVENC (NVIDIA), QuickSync (Intel), and
+       AMD VCN</strong> on virtually every GPU — including older ones. The GPU does the compression in
+       dedicated silicon, so your CPU stays free for the game and high frame rates hold up.</p>
+    <table>
+      <tr><th>Toggle</th><th>Codec preferred</th><th>Encoded by</th></tr>
+      <tr><td><strong>Off</strong></td><td>VP9 (quality-first)</td><td>usually software (CPU)</td></tr>
+      <tr><td><strong>On</strong></td><td>H.264</td><td>GPU hardware encoder</td></tr>
+    </table>
+    <p class="note tip"><strong>Verify it engaged:</strong> open the connection overlay and check
+       <strong>Codec</strong> reads <code>H264</code> with the toggle on. If your stream was choppy with the
+       GPU off, this is the setting that fixes it — it's how OBS keeps high-fps streams smooth.</p>
+    <p class="note"><strong>Why H.264 and not AV1?</strong> AV1 compresses better, but AV1 <em>hardware</em>
+       encoding only exists on the newest GPUs (e.g. NVIDIA RTX 40-series). H.264 hardware encoding is
+       near-universal, so it's the reliable choice for smoothness across machines.</p>
+  </section>
+
+  <!-- CODECS / STATS -->
+  <section id="under-the-hood">
+    <h2><span class="num">⚙️</span> Under the hood</h2>
+    <h3>Codecs</h3>
+    <p>Default is <strong>VP9</strong> (great quality, broad support); turning on Hardware encoding switches
+       the preference to <strong>H.264</strong> for the GPU path. AV1 and VP8 act as fallbacks. The codec is
+       negotiated peer-to-peer; the signaling server is never involved in media.</p>
+    <h3>Resilience</h3>
+    <p>The stream uses adaptive bitrate and graceful degradation, and a dropped network path triggers an
+       automatic <strong>ICE restart</strong> rather than ending the call.</p>
+    <h3>Connection overlay</h3>
+    <p>Live diagnostics you can open any time: actual resolution/fps vs. requested, bitrate, latency, packet
+       loss, codec, the limiting factor (<code>none</code> / <code>cpu</code> / <code>bandwidth</code>), and
+       whether the path is direct <strong>P2P</strong> or via <strong>Relay</strong>.</p>
+  </section>
+
+  <hr>
+  <div class="nextcards">
+    <a href="client.html"><strong>Get started · App →</strong> Install and connect.</a>
+    <a href="server.html"><strong>Get started · Server →</strong> Stand up the pairing server.</a>
+  </div>
+</main>
+
+<footer>
+  🍄 <strong>mushroom steam</strong> — tune it to your hardware and network. Most changes apply live, no reconnect.
+</footer>
+
+</body>
+</html>

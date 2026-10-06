@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Get started · Server — mushroom steam</title>
+<meta name="description" content="Set up the mushroom steam signaling + TURN server on a Raspberry Pi or any Linux box. The server only pairs peers — video flows peer-to-peer.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="site">
+  <a class="brand" href="index.html">🍄 mushroom steam</a>
+  <div class="links">
+    <a href="index.html">Home</a>
+    <a href="client.html">Get started · App</a>
+    <a href="server.html" class="on">Get started · Server</a>
+    <a href="settings.html">Settings</a>
+    <a href="download.html">Download</a>
+    <a href="https://github.com/Zachary-work/mushroom-steam">GitHub</a>
+  </div>
+</nav>
+
+<header class="hero" style="padding:48px 20px 36px">
+  <h1 style="font-size:2.1rem">Get started · Server</h1>
+  <p class="tag">A one-time setup. The server only <strong>pairs</strong> people and signs relay credentials —
+     <strong>no video ever passes through it</strong>. A Raspberry Pi is plenty.</p>
+</header>
+
+<main class="wrap">
+
+  <!-- HOW IT WORKS -->
+  <section id="how">
+    <h2><span class="num">★</span> What the server actually does</h2>
+    <p>mushroom steam is <strong>peer-to-peer</strong>: gameplay video travels directly between the two PCs.
+       The server you host does only the small jobs needed to <em>introduce</em> them.</p>
+    <pre class="mermaid">
+flowchart LR
+  subgraph SERVER["🖥️ Your server (e.g. Raspberry Pi)"]
+    direction TB
+    SIG["Signaling (wss://)<br/>pairs peers by room code"]
+    TURN["coturn (TURN)<br/>relay — fallback only"]
+  end
+  HOST["🎮 Host (app)"]
+  VIEW["👀 Viewer (app)"]
+  HOST -- "room code + SDP/ICE" --> SIG
+  VIEW -- "room code + SDP/ICE" --> SIG
+  HOST == "VIDEO — direct peer-to-peer" ==> VIEW
+  HOST -. "relay only if NAT blocks" .-> TURN
+  TURN -. relay .-> VIEW
+    </pre>
+    <p class="diagram-cap">No media passes through the signaling service — it only introduces the peers.</p>
+    <div class="card">
+      <strong>Two jobs, one small server:</strong>
+      <ul>
+        <li><strong>Signaling</strong> — brokers the WebRTC handshake (SDP + ICE) over a single TLS
+            WebSocket and pairs people by room code. <em>No media passes through it.</em></li>
+        <li><strong>TURN credentials</strong> — signs short-lived <code>coturn</code> credentials so
+            tough-NAT pairs can relay video as a last resort. (Even then, coturn relays the media — the
+            signaling service itself never does.)</li>
+      </ul>
+      Access is gated by <strong>wss://</strong> and a <strong>shared app secret</strong>, so strangers can't use your server.
+    </div>
+  </section>
+
+  <!-- WHAT YOU NEED -->
+  <section id="need">
+    <h2><span class="num">✓</span> What you need</h2>
+    <span class="pill">A Pi / Linux box</span>
+    <span class="pill">Docker + Compose</span>
+    <span class="pill">A router you can port-forward</span>
+    <span class="pill">A free DuckDNS name</span>
+    <p class="note tip"><strong>No fixed IP?</strong> That's normal at home — DuckDNS gives you a free
+       hostname that always points at your current address.</p>
+  </section>
+
+  <!-- STEPS -->
+  <section id="steps">
+    <h2><span class="num">1</span> Get the code &amp; Docker</h2>
+    <p>Everything below happens on the server (e.g. <code>ssh you@your-pi</code>). The full reference is in
+       <a href="https://github.com/Zachary-work/mushroom-steam/blob/main/server/README.md"><code>server/README.md</code></a>.</p>
+<pre><code><span class="c-comment"># Install Docker if you don't have it</span>
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER   <span class="c-comment"># then log out/in</span>
+
+<span class="c-comment"># Clone the project</span>
+git clone https://github.com/Zachary-work/mushroom-steam.git
+cd mushroomSteam/server</code></pre>
+
+    <h2><span class="num">2</span> A stable address (DuckDNS)</h2>
+    <p>Create a free subdomain at <a href="https://www.duckdns.org">duckdns.org</a> (e.g.
+       <code>mushroom</code> → <code>mushroom.duckdns.org</code>) and copy your token. Keep it pointed at
+       your home IP with a cron job:</p>
+<pre><code>( crontab -l 2>/dev/null; echo <span class="c-str">'*/5 * * * * curl -s "https://www.duckdns.org/update?domains=mushroom&token=YOUR_TOKEN&ip=" >/dev/null'</span> ) | crontab -</code></pre>
+
+    <h2><span class="num">3</span> Port-forward on your router</h2>
+    <p>Forward these from your router to the Pi's LAN IP:</p>
+    <table>
+      <tr><th>Port</th><th>Protocol</th><th>Used by</th></tr>
+      <tr><td><code>8443</code></td><td>TCP</td><td>signaling (wss) — or whatever <code>port</code> you set</td></tr>
+      <tr><td><code>3478</code></td><td>TCP <strong>and</strong> UDP</td><td>coturn TURN relay</td></tr>
+      <tr><td><code>49152–65535</code></td><td>UDP</td><td>coturn relay media range (optional, improves reliability)</td></tr>
+    </table>
+
+    <h2><span class="num">4</span> TLS certificate (for <code>wss://</code>)</h2>
+    <p>Get a free Let's Encrypt cert for your DuckDNS name. DNS-01 avoids opening ports 80/443:</p>
+<pre><code><span class="c-comment"># Using acme.sh with the DuckDNS DNS-01 challenge</span>
+export DuckDNS_Token=YOUR_TOKEN
+acme.sh --issue --dns dns_duckdns -d mushroom.duckdns.org
+
+<span class="c-comment"># Install the cert where Compose mounts it (server/certs/)</span>
+mkdir -p certs
+acme.sh --install-cert -d mushroom.duckdns.org --ecc \
+  <span class="c-flag">--key-file</span>       "$PWD/certs/privkey.pem" \
+  <span class="c-flag">--fullchain-file</span>  "$PWD/certs/fullchain.pem" \
+  <span class="c-flag">--reloadcmd</span>       "docker restart mushroom-signal"</code></pre>
+    <p class="note"><strong>Why the reload hook?</strong> When the cert auto-renews, it restarts the
+       signaling container so it picks up the new cert.</p>
+
+    <h2><span class="num">5</span> Configure coturn (the relay)</h2>
+    <p>Edit <code>server/coturn/turnserver.conf</code> and set a long random
+       <code>static-auth-secret</code> plus your public IP as <code>external-ip</code>.
+       <strong>Remember that secret</strong> — it must match the next step.</p>
+
+    <h2><span class="num">6</span> Configure the signaling server</h2>
+<pre><code>cp config.example.json config.json
+nano config.json</code></pre>
+    <p>Set at minimum:</p>
+    <table>
+      <tr><th>Key</th><th>Value</th></tr>
+      <tr><td><code>secret</code></td><td>A long random string — <strong>the app must send the same one</strong>.</td></tr>
+      <tr><td><code>tls.cert</code> / <code>tls.key</code></td><td>Container paths: <code>/certs/fullchain.pem</code> and <code>/certs/privkey.pem</code>.</td></tr>
+      <tr><td><code>turn.secret</code></td><td>Must equal coturn's <code>static-auth-secret</code> from step 5.</td></tr>
+      <tr><td><code>turn.urls</code></td><td><code>turn:mushroom.duckdns.org:3478?transport=udp</code> (and <code>…tcp</code>).</td></tr>
+    </table>
+    <p class="note tip"><strong>Generate strong secrets:</strong>
+       <code>openssl rand -hex 24</code> gives a good <code>secret</code> and <code>turn.secret</code>.
+       Every key can also be supplied via an env var (e.g. <code>MS_SECRET</code>, <code>MS_PORT</code>) — env wins over the file.</p>
+
+    <h2><span class="num">7</span> Launch</h2>
+<pre><code>docker compose up -d --build      <span class="c-comment"># start signal + coturn (auto-restart on boot)</span>
+docker compose logs -f signal     <span class="c-comment"># follow signaling logs</span></code></pre>
+    <p>Confirm it's alive — from anywhere:</p>
+<pre><code>curl -k https://mushroom.duckdns.org:8443/health   <span class="c-comment"># → ok</span></code></pre>
+    <p>Now point the app at <code>wss://mushroom.duckdns.org:8443</code> with the same <code>secret</code>.
+       Continue to <a href="client.html">Get started · App →</a></p>
+  </section>
+
+  <!-- LAN ONLY -->
+  <section id="lan">
+    <h2><span class="num">⚡</span> LAN-only quick test</h2>
+    <p>To try it on a single network without certificates or port-forwarding, omit the <code>tls</code> block
+       so the server runs plain <code>ws://</code>, then point both apps at
+       <code>ws://&lt;pi-lan-ip&gt;:8443</code> with the shared secret.</p>
+    <p class="note warn"><strong>LAN only.</strong> Never expose <code>ws://</code> to the internet — it's
+       unencrypted. Use <code>wss://</code> with a real certificate for anything beyond your LAN.</p>
+  </section>
+
+  <!-- TROUBLESHOOTING -->
+  <section id="trouble">
+    <h2><span class="num">?</span> Troubleshooting</h2>
+    <details>
+      <summary>The app says “Server rejected the app secret.”</summary>
+      The <strong>App secret</strong> in the app doesn't match <code>secret</code> in the server's
+      <code>config.json</code>. They must be identical (case-sensitive).
+    </details>
+    <details>
+      <summary>“Could not reach the server.”</summary>
+      Check <code>curl -k https://YOUR-HOST:8443/health</code> returns <code>ok</code>. If it works on the
+      Pi but not externally, your <strong>port-forwarding</strong> (8443) isn't reaching the Pi, or DuckDNS
+      isn't pointed at your current IP.
+    </details>
+    <details>
+      <summary>Cert / TLS errors in the app</summary>
+      The URL host must exactly match the certificate name (<code>mushroom.duckdns.org</code>, not the raw
+      IP). Re-check <code>tls.cert</code>/<code>tls.key</code> paths and that
+      <code>docker restart mushroom-signal</code> ran after issuing the cert.
+    </details>
+    <details>
+      <summary>Connects on LAN but not over the internet</summary>
+      Verify port-forwarding (8443 + 3478), and set <code>external-ip</code> in
+      <code>turnserver.conf</code> to your public IP. Test TURN at the
+      <a href="https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/">Trickle ICE sample</a> —
+      add <code>turn:mushroom.duckdns.org:3478</code> and you should see a <code>relay</code> candidate.
+    </details>
+    <details>
+      <summary>Useful server commands</summary>
+<pre style="margin:6px 0"><code>docker compose logs -f signal     <span class="c-comment"># signaling logs</span>
+docker logs mushroom-coturn       <span class="c-comment"># TURN logs</span>
+docker compose restart            <span class="c-comment"># restart both</span>
+docker compose down               <span class="c-comment"># stop</span></code></pre>
+    </details>
+  </section>
+
+  <hr>
+  <div class="nextcards">
+    <a href="client.html"><strong>Next: Get started · App →</strong> Install the app and connect.</a>
+    <a href="settings.html"><strong>Settings reference →</strong> What every quality option does.</a>
+  </div>
+</main>
+
+<footer>
+  🍄 <strong>mushroom steam</strong> — the server only pairs peers and signs TURN credentials. No video, no content logs.<br>
+  Full reference: <a href="https://github.com/Zachary-work/mushroom-steam/blob/main/server/README.md">server/README.md</a>
+</footer>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: {
+    primaryColor: '#FBF5EA', primaryBorderColor: '#C8492F', primaryTextColor: '#2C2519',
+    lineColor: '#C8492F', secondaryColor: '#EFE4D1', tertiaryColor: '#FBF3DE', fontSize: '14px'
+  }});
+</script>
+</body>
+</html>

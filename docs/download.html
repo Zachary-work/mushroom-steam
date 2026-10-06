@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Download — mushroom steam</title>
+<meta name="description" content="Download mushroom steam — a portable Windows build, or build from source for macOS and Linux.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="site">
+  <a class="brand" href="index.html">🍄 mushroom steam</a>
+  <div class="links">
+    <a href="index.html">Home</a>
+    <a href="client.html">Get started · App</a>
+    <a href="server.html">Get started · Server</a>
+    <a href="settings.html">Settings</a>
+    <a href="download.html" class="on">Download</a>
+    <a href="https://github.com/Zachary-work/mushroom-steam">GitHub</a>
+  </div>
+</nav>
+
+<header class="hero" style="padding:56px 20px 40px">
+  <div class="logo">🍄</div>
+  <h1 style="font-size:2.2rem">Download mushroom steam</h1>
+  <p class="tag">A portable Windows build — no installer. Or build from source on any platform.</p>
+  <div class="cta">
+    <a class="btn" href="https://github.com/Zachary-work/mushroom-steam/releases/latest">Download for Windows</a>
+    <a class="btn ghost" href="#source">Build from source</a>
+  </div>
+  <div class="badges" style="margin-top:18px">
+    <span class="badge coral">Windows x64</span>
+    <span class="badge">Portable · no install</span>
+    <span class="badge">Signed</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section>
+    <p class="note"><strong>These pages show the 0.4 app.</strong> Since 0.5 the app is built around <em>rooms</em>:
+      a permanent room code instead of per-stream codes, several people streaming at once, a voice lounge with
+      noise suppression, and chat. The server setup is unchanged. The guides will be refreshed; the
+      <a href="https://github.com/Zachary-work/mushroom-steam/releases/latest">release notes</a> list what is new.</p>
+    <p class="note tip"><strong>You'll also need a server.</strong> The app pairs through a signaling server
+      you host. Set one up in <a href="server.html">Get started · Server</a> (a Raspberry Pi is plenty), or
+      try the <a href="server.html#lan">LAN-only quick test</a> first.</p>
+  </section>
+
+  <!-- WINDOWS -->
+  <section id="windows">
+    <h2><span class="num">⬇</span> Windows (portable)</h2>
+    <p>Grab the latest <code>mushroom steam X.Y.Z.exe</code> from the
+       <a href="https://github.com/Zachary-work/mushroom-steam/releases/latest">Releases page</a> and run it —
+       there's no installation step. It's a single signed executable.</p>
+    <table>
+      <tr><th>Item</th><th>Detail</th></tr>
+      <tr><td>Format</td><td>Portable <code>.exe</code> (run directly, nothing installed)</td></tr>
+      <tr><td>Architecture</td><td>x64</td></tr>
+      <tr><td>OS</td><td>Windows 10 / 11</td></tr>
+      <tr><td>Per-window audio</td><td>Works out of the box in official builds (Windows 10 build 20348+)</td></tr>
+    </table>
+    <p class="note"><strong>SmartScreen warning?</strong> A new portable build may not be recognized yet.
+       Choose <em>More info → Run anyway</em>, or build it yourself from source below.</p>
+  </section>
+
+  <!-- SOURCE -->
+  <section id="source">
+    <h2><span class="num">⚙</span> Build from source (any OS)</h2>
+    <p>Works on Windows, macOS, and Linux. Requires <strong>Node 18+</strong>.</p>
+<pre><code>git clone https://github.com/Zachary-work/mushroom-steam.git
+cd mushroomSteam
+npm install
+npm start                 <span class="c-comment"># run the app</span>
+<span class="c-comment"># or build a Windows portable .exe →</span>
+npm run build:win</code></pre>
+    <p class="note"><strong>macOS:</strong> the first launch asks for <strong>Screen Recording</strong>
+       permission. <strong>Windows</strong> works out of the box. If Electron's binary didn't download during
+       <code>npm install</code>, run <code>node node_modules/electron/install.js</code>.</p>
+    <p class="note"><strong>Per-window audio from source (Windows):</strong> needs the Visual C++ build tools
+       + Windows SDK, then <code>npm run rebuild</code>. Without them the app still runs and simply falls back
+       to system audio. See <a href="settings.html#audio">Stream audio</a>.</p>
+  </section>
+
+  <!-- AFTER -->
+  <section id="after">
+    <h2><span class="num">▶</span> After you download</h2>
+    <ol>
+      <li>Run the app on <strong>both</strong> PCs (the one sharing and the one watching).</li>
+      <li>Point each at your server: <strong>🌐 Server</strong> → URL + shared secret
+          (<a href="client.html#server">how →</a>).</li>
+      <li>Host clicks <strong>Share my screen</strong> and sends the room code; the viewer picks
+          <strong>Watch a friend</strong> and types it in.</li>
+    </ol>
+    <div class="nextcards">
+      <a href="client.html"><strong>Get started · App →</strong> Full walkthrough with screenshots.</a>
+      <a href="server.html"><strong>Get started · Server →</strong> Stand up the pairing server.</a>
+      <a href="settings.html"><strong>Settings →</strong> Tune resolution, bitrate, and hardware encoding.</a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  🍄 <strong>mushroom steam</strong> — self-hosted, peer-to-peer gameplay streaming.<br>
+  <a href="https://github.com/Zachary-work/mushroom-steam/releases">All releases</a> ·
+  <a href="https://github.com/Zachary-work/mushroom-steam">project on GitHub</a>
+</footer>
+
+</body>
+</html>

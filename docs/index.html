@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🍄 mushroom steam — peer-to-peer gameplay streaming</title>
+<meta name="description" content="mushroom steam is a self-hosted, peer-to-peer low-latency gameplay streaming app. Video flows directly between two PCs; your tiny signaling server only pairs them.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="site">
+  <a class="brand" href="index.html">🍄 mushroom steam</a>
+  <div class="links">
+    <a href="index.html" class="on">Home</a>
+    <a href="client.html">Get started · App</a>
+    <a href="server.html">Get started · Server</a>
+    <a href="settings.html">Settings</a>
+    <a href="download.html">Download</a>
+    <a href="https://github.com/Zachary-work/mushroom-steam">GitHub</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="logo">🍄</div>
+  <h1>mushroom steam</h1>
+  <p class="tag">Low-latency gameplay streaming that runs on <strong>your own</strong> infrastructure.
+     Video flows <strong>directly between two PCs</strong> — peer-to-peer. Your server only pairs them.</p>
+  <div class="badges">
+    <span class="badge coral">Peer-to-peer</span>
+    <span class="badge">Self-hosted</span>
+    <span class="badge">up to 4K · 120 fps</span>
+    <span class="badge">Hardware encoding</span>
+    <span class="badge">Per-window audio</span>
+    <span class="badge">Windows · macOS · Linux</span>
+  </div>
+  <div class="cta">
+    <a class="btn" href="download.html">Download</a>
+    <a class="btn ghost" href="client.html">Get started</a>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <figure class="shot">
+    <img src="img/home.png" alt="mushroom steam home screen — Share my screen or Watch a friend">
+    <figcaption>One window, two choices: share your screen, or watch a friend.</figcaption>
+  </figure>
+
+  <!-- The big idea -->
+  <section>
+    <h2>It's a <em>peer-to-peer</em> streaming app</h2>
+    <p class="lead">Unlike Twitch or Discord, your gameplay video never travels through a company's
+      servers. It goes <strong>straight from your PC to your friend's PC</strong>. The only thing in the
+      middle is a tiny <strong>signaling server</strong> you host yourself — and it's just a matchmaker.</p>
+
+    <pre class="mermaid">
+flowchart LR
+  subgraph SERVER["🖥️ Your server (a Raspberry Pi is plenty)"]
+    direction TB
+    SIG["Signaling (wss://)<br/>introduces the two peers"]
+    TURN["coturn (TURN)<br/>relay — fallback only"]
+  end
+  HOST["🎮 Host (app)"]
+  VIEW["👀 Viewer (app)"]
+  HOST -- "room code + SDP/ICE" --> SIG
+  VIEW -- "room code + SDP/ICE" --> SIG
+  HOST == "VIDEO — direct peer-to-peer" ==> VIEW
+  HOST -. "relay only if NAT blocks" .-> TURN
+  TURN -. relay .-> VIEW
+    </pre>
+    <p class="diagram-cap">Your server only pairs the peers. The video travels directly between the two PCs.</p>
+
+    <div class="card">
+      <strong>What the signaling server does — and doesn't:</strong>
+      <ul>
+        <li>✅ <strong>Pairs people</strong> by a short room code like <code>MUSH-7Q2K4</code>.</li>
+        <li>✅ <strong>Relays the WebRTC handshake</strong> (a few small SDP/ICE messages) so the two PCs
+            can find each other and connect directly.</li>
+        <li>✅ <strong>Signs short-lived TURN credentials</strong> for the fallback relay.</li>
+        <li>❌ <strong>Never sees your video.</strong> No media, no recording, no content logs pass through it.</li>
+      </ul>
+      Because it only does introductions, it's tiny, cheap, and private — a Pi handles it without breaking a sweat.
+      <a href="server.html#how">More on how it works →</a>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section>
+    <h2>What you get</h2>
+    <div class="grid">
+      <div class="feature"><div class="ic">⚡</div><h3>True low latency</h3>
+        <p>Real-time WebRTC, sub-second glass-to-glass — built for playing together, not watching on a delay.</p></div>
+      <div class="feature"><div class="ic">🔒</div><h3>Private &amp; self-hosted</h3>
+        <p>You run the only server involved, and it never touches the video. Nothing is uploaded to a third party.</p></div>
+      <div class="feature"><div class="ic">🎮</div><h3>Up to 4K · 120 fps</h3>
+        <p>Pick 720p / 1080p / 1440p / 4K at 30 / 60 / 120 fps, with a 1–100 Mbps bitrate slider.</p></div>
+      <div class="feature"><div class="ic">🖥️</div><h3>Hardware encoding</h3>
+        <p>Turn on the GPU toggle to encode with H.264 on NVENC / QuickSync / AMD — smooth high-fps with almost no CPU cost.</p></div>
+      <div class="feature"><div class="ic">🔊</div><h3>Per-window audio</h3>
+        <p>Share only the sound of the window you're streaming — not your whole desktop. (Windows.)</p></div>
+      <div class="feature"><div class="ic">🎚️</div><h3>Live quality changes</h3>
+        <p>Change resolution, framerate, bitrate or codec mid-stream — applied instantly, no reconnect.</p></div>
+      <div class="feature"><div class="ic">🔁</div><h3>Resilient</h3>
+        <p>Adaptive bitrate, graceful degradation, and automatic ICE-restart recovery if the network blips.</p></div>
+      <div class="feature"><div class="ic">📊</div><h3>Connection stats</h3>
+        <p>A built-in overlay shows live codec, bitrate, resolution, fps, latency, packet loss and the limiting factor.</p></div>
+    </div>
+  </section>
+
+  <!-- Quick start -->
+  <section>
+    <h2>Get going in two parts</h2>
+    <div class="nextcards">
+      <a href="server.html"><strong>1 · Set up the server →</strong>
+        A one-time setup on a Pi or any Linux box: Docker, a free hostname, TLS, and the pairing service.</a>
+      <a href="client.html"><strong>2 · Set up the app →</strong>
+        Install on each PC, point it at your server, then host or watch with a room code.</a>
+      <a href="settings.html"><strong>Tune the quality →</strong>
+        What every setting does — resolution, framerate, bitrate, audio, low-latency, and hardware encoding.</a>
+    </div>
+    <p class="note tip"><strong>Just want to try it?</strong> You can run the signaling server on your LAN
+      over plain <code>ws://</code> with no certificate, and connect two PCs on the same network in minutes.
+      See <a href="server.html#lan">LAN-only quick test</a>.</p>
+  </section>
+
+</main>
+
+<footer>
+  🍄 <strong>mushroom steam</strong> — self-hosted, peer-to-peer gameplay streaming.<br>
+  Your server keeps no video and no content logs — it only relays signaling and signs TURN credentials.<br>
+  <a href="https://github.com/Zachary-work/mushroom-steam">View the project on GitHub</a>
+</footer>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: {
+    primaryColor: '#FBF5EA', primaryBorderColor: '#C8492F', primaryTextColor: '#2C2519',
+    lineColor: '#C8492F', secondaryColor: '#EFE4D1', tertiaryColor: '#FBF3DE', fontSize: '14px'
+  }});
+</script>
+</body>
+</html>
