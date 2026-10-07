@@ -13,10 +13,10 @@ live in a separate repository.
 
 ## Download
 
-**Windows:** get the latest `mushroom steam X.Y.Z.exe` from the
-[Releases page](https://github.com/Zachary-work/mushroom-steam/releases/latest). It is a
-portable build — run it, nothing is installed. The app checks this page for newer versions
-when it starts.
+**Windows:** get `mushroom-steam-Setup-X.Y.Z.exe` from the
+[Releases page](https://github.com/Zachary-work/mushroom-steam/releases/latest) and run it
+once (per user, no admin needed). After that the app checks this page when it starts and
+offers newer versions: *Install now* downloads and restarts into them.
 
 You also need a server to point the app at: see the setup guide.
 
